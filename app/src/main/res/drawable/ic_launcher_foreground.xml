@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Off-center circle backdrop -->
+    <path
+        android:fillColor="#1F2A44"
+        android:pathData="M54,54 m-30,0 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0" />
+    <!-- Stylized rupee glyph -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M44,40 L70,40 L70,44 L60,44 a8,8 0 0 1 8,8 L68,52 a8,8 0 0 1 -8,8 L52,60 L70,76 L64,76 L46,60 L46,56 L60,56 a4,4 0 0 0 0,-8 L44,48 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M44,48 L70,48 L70,52 L44,52 Z" />
+</vector>

@@ -1,0 +1,6 @@
+# Supabase CLI configuration for the Money Tracker project.
+# Applied with:  supabase link --project-ref <your-ref>  then  supabase db push
+project_id = "moneytracker"
+
+[db]
+major_version = 15

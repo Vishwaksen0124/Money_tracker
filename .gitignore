@@ -1,0 +1,37 @@
+# Android build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+**/build/
+**/.gradle/
+.gradle/
+build/
+local.properties
+
+# Signing & secrets — Hardening §20.9, never commit
+*.keystore
+*.jks
+*.p12
+*.pem
+keystore.properties
+release.properties
+# Env in any form — .env, .env.sh, .env.local, foo.env, etc.
+.env
+.env.*
+*.env
+
+# Real SMS samples / fixtures — Hardening §20.10
+parser_samples_real/
+parser_fixtures_real/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Heap dumps / captures
+captures/
+*.hprof
