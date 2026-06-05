@@ -1,6 +1,8 @@
 package app.moneytracker.ui.dashboard
 
 import android.app.Activity
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -60,6 +62,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import app.moneytracker.MoneyApp
+import app.moneytracker.capture.NotifCapture
 import app.moneytracker.capture.SmsCapture
 import app.moneytracker.cloud.AuthRepository
 import app.moneytracker.data.Category
@@ -104,12 +107,14 @@ fun DashboardScreen(@Suppress("UNUSED_PARAMETER") app: MoneyApp) {
     val email = remember { AuthRepository.currentUserEmail() }
     val scope = rememberCoroutineScope()
     var smsEnabled by remember { mutableStateOf(SmsCapture.hasPermissions(context)) }
+    var notifEnabled by remember { mutableStateOf(NotifCapture.accessGranted(context)) }
 
-    // Re-check after returning from the system permission dialog (which
-    // backgrounds then resumes the activity), so the card disappears and the
-    // backfill kicks in once granted.
+    // Re-check after returning from the system permission dialog / settings
+    // (which background then resume the activity), so the cards disappear and
+    // the backfill kicks in once granted.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         smsEnabled = SmsCapture.hasPermissions(context)
+        notifEnabled = NotifCapture.accessGranted(context)
     }
 
     // Idempotent inbox sweep on every dashboard open (and right after the
@@ -211,6 +216,16 @@ fun DashboardScreen(@Suppress("UNUSED_PARAMETER") app: MoneyApp) {
                                 (context as? Activity)?.let {
                                     ActivityCompat.requestPermissions(it, SmsCapture.PERMISSIONS, REQ_SMS)
                                 }
+                            }
+                        }
+                    }
+                    if (!notifEnabled) {
+                        item {
+                            EnableNotifCard {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
                             }
                         }
                     }
@@ -438,6 +453,31 @@ private fun EnableSmsCard(onEnable: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             Button(onClick = onEnable, shape = RoundedCornerShape(12.dp)) {
                 Text("Enable SMS capture")
+            }
+        }
+    }
+}
+
+@Composable
+private fun EnableNotifCard(onEnable: () -> Unit) {
+    val cs = MaterialTheme.colorScheme
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant),
+    ) {
+        Column(Modifier.padding(20.dp)) {
+            Text("Catch UPI app payments", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Reads PhonePe / GPay / Paytm payment notifications, so payments " +
+                    "you make from the phone are recorded even when the bank sends no SMS.",
+                style = MaterialTheme.typography.bodySmall,
+                color = cs.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(onClick = onEnable, shape = RoundedCornerShape(12.dp)) {
+                Text("Enable notification access")
             }
         }
     }

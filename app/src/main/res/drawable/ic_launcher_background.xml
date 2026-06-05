@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Vivid diagonal gradient backdrop. -->
+    <path android:pathData="M0,0 h108 v108 h-108 z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="6" android:startY="0"
+                android:endX="102" android:endY="108">
+                <item android:offset="0.0" android:color="#FF0E7A60" />
+                <item android:offset="0.45" android:color="#FF12B886" />
+                <item android:offset="0.75" android:color="#FF22D3A5" />
+                <item android:offset="1.0" android:color="#FF2563EB" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Soft glow blob to give depth. -->
+    <path android:pathData="M78,26 m-26,0 a26,26 0 1,0 52,0 a26,26 0 1,0 -52,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="78" android:centerY="26" android:gradientRadius="30">
+                <item android:offset="0.0" android:color="#33FFFFFF" />
+                <item android:offset="1.0" android:color="#00FFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

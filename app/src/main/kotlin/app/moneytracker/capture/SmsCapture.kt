@@ -56,6 +56,13 @@ object SmsCapture {
             ))
             return false
         }
+        // SMS wins over a notification for the same money — it carries balance
+        // and account, which power reconciliation. Drop the notif row if present.
+        CaptureCommon.nearMatch(parsed.amountPaise, parsed.direction.name, parsed.tsMillis)?.let { near ->
+            if (near.source == "NOTIF" && near.id != null) CaptureCommon.delete(near.id)
+            else return false   // already captured by SMS/manual/recon
+        }
+
         return insertIgnoringDuplicate("transactions", TransactionRow(
             userId = userId,
             ts = Instant.fromEpochMilliseconds(parsed.tsMillis).toString(),
