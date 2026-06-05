@@ -1,13 +1,12 @@
 package app.moneytracker.capture
 
 import app.moneytracker.cloud.AuthRepository
-import app.moneytracker.cloud.SupabaseProvider
 import app.moneytracker.data.Category
 import app.moneytracker.data.TransactionRow
 import app.moneytracker.data.insertIgnoringDuplicate
 import app.moneytracker.parser.Util
 import app.moneytracker.parser.notif.NotifParser
-import io.github.jan.supabase.auth.auth
+import app.moneytracker.security.SecureLogger
 import kotlinx.datetime.Instant
 
 /**
@@ -27,14 +26,19 @@ object NotifCapture {
     }
 
     suspend fun process(pkg: String, title: String, text: String, tsMillis: Long): Boolean {
-        val p = NotifParser.parse(pkg, title, text) ?: return false
-        SupabaseProvider.client.auth.awaitInitialization()
-        val userId = AuthRepository.currentUserId() ?: return false
+        SecureLogger.d { "notif seen pkg=$pkg title='$title' text='$text'" }
+        val p = NotifParser.parse(pkg, title, text)
+        if (p == null) { SecureLogger.d { "notif parse=null" }; return false }
+        val userId = AuthRepository.awaitUserId()
+        if (userId == null) { SecureLogger.d { "notif no-user" }; return false }
 
         // If a bank SMS already recorded this money, keep that (richer) row.
-        if (CaptureCommon.nearMatch(p.amountPaise, p.direction, tsMillis) != null) return false
+        if (CaptureCommon.nearMatch(p.amountPaise, p.direction, tsMillis) != null) {
+            SecureLogger.d { "notif dedup-skip ${p.direction}" }
+            return false
+        }
 
-        return insertIgnoringDuplicate("transactions", TransactionRow(
+        val inserted = insertIgnoringDuplicate("transactions", TransactionRow(
             userId = userId,
             ts = Instant.fromEpochMilliseconds(tsMillis).toString(),
             amountPaise = p.amountPaise,
@@ -44,5 +48,7 @@ object NotifCapture {
             rawHash = Util.rawHash("NOTIF", pkg, "$title|$text"),
             category = Category.auto(p.direction, "UPI")?.name,
         ))
+        SecureLogger.d { "notif capture from $pkg inserted=$inserted ${p.direction}" }
+        return inserted
     }
 }

@@ -133,13 +133,17 @@ fun DashboardScreen(@Suppress("UNUSED_PARAMETER") app: MoneyApp) {
         SecureLogger.d { "fetch start (cacheSeed=${seed != null})" }
         runCatching { TransactionRepository.recent() }
             .onSuccess { fetched ->
-                // Paint immediately — don't make the user wait on reconciliation.
-                rows = fetched
+                // Keep existing rows if the fetch glitched to empty (session
+                // failed to attach) — only replace when it actually returns data
+                // or when we have nothing to show yet.
+                if (fetched.isNotEmpty() || rows.isEmpty()) {
+                    rows = fetched
+                    if (fetched.isNotEmpty()) TransactionCacheStore.save(context, fetched)
+                }
                 loadFailed = false
                 loaded = true
                 refreshing = false
-                TransactionCacheStore.save(context, fetched)
-                SecureLogger.d { "fetch done in ${android.os.SystemClock.elapsedRealtime() - t0}ms n=${fetched.size}" }
+                SecureLogger.d { "fetch done in ${android.os.SystemClock.elapsedRealtime() - t0}ms n=${fetched.size} shown=${rows.size}" }
                 // Reconcile in the background; refresh only if it added rows.
                 val found = runCatching { Reconciler.run(fetched) }.getOrDefault(0)
                 if (found > 0) {
@@ -368,6 +372,7 @@ private fun TodayHero(paise: Long) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = cs.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Box(
             Modifier.fillMaxWidth().background(
@@ -389,6 +394,7 @@ private fun StatTile(label: String, paise: Long) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(Modifier.padding(20.dp)) {
             Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -409,6 +415,7 @@ private fun IncomeSummary(incomePaise: Long, spentPaise: Long) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
             DirectionBadge(credit = true)
@@ -436,6 +443,7 @@ private fun EnableSmsCard(onEnable: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = cs.primaryContainer),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(Modifier.padding(20.dp)) {
             Text(
@@ -465,6 +473,7 @@ private fun EnableNotifCard(onEnable: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = cs.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(Modifier.padding(20.dp)) {
             Text("Catch UPI app payments", style = MaterialTheme.typography.titleMedium)
@@ -508,6 +517,7 @@ private fun TransactionRowItem(row: TransactionRow, tz: TimeZone, onClick: () ->
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
@@ -585,6 +595,7 @@ private fun EmptyState(failed: Boolean, onRetry: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -674,6 +685,7 @@ private fun CategoryBreakdown(byCategory: List<Pair<Category, Long>>, monthSpent
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = cs.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Spending by category", style = MaterialTheme.typography.titleMedium)

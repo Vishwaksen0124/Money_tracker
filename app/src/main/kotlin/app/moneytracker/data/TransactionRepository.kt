@@ -4,6 +4,8 @@ import app.moneytracker.cloud.AuthRepository
 import app.moneytracker.cloud.SupabaseProvider
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.util.UUID
@@ -26,15 +28,19 @@ object TransactionRepository {
     var cached: List<TransactionRow>? = null
         private set
 
-    suspend fun recent(limit: Long = 200): List<TransactionRow> {
-        return SupabaseProvider.client
+    suspend fun recent(limit: Long = 200): List<TransactionRow> = withContext(Dispatchers.IO) {
+        SupabaseProvider.client
             .from("transactions")
             .select {
                 order(column = "ts", order = Order.DESCENDING)
                 limit(limit)
             }
             .decodeList<TransactionRow>()
-            .also { cached = it }
+            // Cache only non-empty results: the SDK's session sometimes fails to
+            // attach on a given launch and the query returns 0 rows even though
+            // data exists. Keeping the last non-empty snapshot means a glitched
+            // fetch never wipes the user's view.
+            .also { if (it.isNotEmpty()) cached = it }
     }
 
     /** Optimistically reflect a just-inserted row in the cache. */

@@ -21,9 +21,36 @@ object AuthRepository {
 
     val sessionStatus: Flow<SessionStatus> get() = auth.sessionStatus
 
-    fun currentUserId(): String? = auth.currentUserOrNull()?.id
+    // The SDK often restores the session token without the decoded user
+    // object, so currentUserOrNull() is null even with a valid session. Fall
+    // back to the JWT's `sub` claim, which always carries the user id.
+    fun currentUserId(): String? =
+        auth.currentUserOrNull()?.id
+            ?: auth.currentSessionOrNull()?.accessToken?.let(::userIdFromJwt)
 
     fun currentUserEmail(): String? = auth.currentUserOrNull()?.email
+
+    /**
+     * Bounded wait for the session to restore from storage, returning the user
+     * id once available (or null after [timeoutMs]). Replaces the SDK's
+     * awaitInitialization(), which hangs in this setup. Without it the fetch /
+     * capture race an unattached session, so requests go out unauthenticated
+     * and RLS returns 0 rows.
+     */
+    suspend fun awaitUserId(timeoutMs: Long = 5_000): String? {
+        var waited = 0L
+        while (auth.currentSessionOrNull() == null && waited < timeoutMs) {
+            kotlinx.coroutines.delay(100)
+            waited += 100
+        }
+        return currentUserId()
+    }
+
+    private fun userIdFromJwt(token: String): String? = runCatching {
+        val payload = token.split(".")[1]
+        val json = String(android.util.Base64.decode(payload, android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP))
+        Regex("\"sub\"\\s*:\\s*\"([^\"]+)\"").find(json)?.groupValues?.get(1)
+    }.getOrNull()
 
     /**
      * Returns:

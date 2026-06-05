@@ -23,7 +23,9 @@ class TxnNotificationListener : NotificationListenerService() {
      *  notifications already in the shade so a payment that arrived before the
      *  user enabled access still gets captured. Dedup keeps it idempotent. */
     override fun onListenerConnected() {
-        runCatching { activeNotifications }.getOrNull()?.forEach(::handle)
+        val active = runCatching { activeNotifications }.getOrNull().orEmpty()
+        SecureLogger.d { "listener connected; ${active.size} active notifs" }
+        active.forEach(::handle)
     }
 
     private fun handle(sbn: StatusBarNotification) {

@@ -44,8 +44,7 @@ object SmsCapture {
     /** Parses and uploads one SMS. Returns true if a new row was inserted. */
     suspend fun process(sender: String, body: String, receivedAtMillis: Long): Boolean {
         val parser = parsers.firstOrNull { it.matches(sender) } ?: return false
-        SupabaseProvider.client.auth.awaitInitialization()
-        val userId = AuthRepository.currentUserId() ?: return false
+        val userId = AuthRepository.awaitUserId() ?: return false
 
         val parsed = parser.parse(sender, body, receivedAtMillis)
         if (parsed == null) {
