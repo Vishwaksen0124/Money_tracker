@@ -17,7 +17,16 @@ import kotlinx.coroutines.launch
  */
 class TxnNotificationListener : NotificationListenerService() {
 
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
+    override fun onNotificationPosted(sbn: StatusBarNotification) = handle(sbn)
+
+    /** On (re)connect — including the moment access is granted — sweep the
+     *  notifications already in the shade so a payment that arrived before the
+     *  user enabled access still gets captured. Dedup keeps it idempotent. */
+    override fun onListenerConnected() {
+        runCatching { activeNotifications }.getOrNull()?.forEach(::handle)
+    }
+
+    private fun handle(sbn: StatusBarNotification) {
         val pkg = sbn.packageName
         if (pkg !in NotifParser.UPI_PACKAGES) return
 
