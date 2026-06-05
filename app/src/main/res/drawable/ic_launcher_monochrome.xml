@@ -4,10 +4,10 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Themed-icon (Android 13+) layer: rupee only, system tints it. -->
-    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M36,34 L63,34" />
-    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M36,47 L63,47" />
-    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M42,34 L42,47" />
-    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M63,34 A6.5,6.5 0 0 1 63,47" />
-    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="7" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M50,47 L70,80" />
+    <!-- Themed-icon (Android 13+) layer: bars + arrow, system tints it. -->
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="12" android:strokeLineCap="round" android:pathData="M38,66 L38,74" />
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="12" android:strokeLineCap="round" android:pathData="M54,56 L54,74" />
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="12" android:strokeLineCap="round" android:pathData="M70,44 L70,74" />
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="5" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M34,58 L54,48 L78,30" />
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="5" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M78,30 L67,31 M78,30 L78,41" />
 </vector>
